@@ -1,30 +1,26 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 project(cpp_parallel_nn LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Prefer LLVM clang on macOS for OpenMP
-# We'll pass it explicitly when configuring (see build commands below).
+add_executable(bench src/bench.cpp)
+target_include_directories(bench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-find_package(OpenMP REQUIRED)
+# OpenMP
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(bench PRIVATE OpenMP::OpenMP_CXX)
+  target_compile_definitions(bench PRIVATE HAS_OPENMP=1)
+endif()
 
-add_executable(bench_matmul
-  src/bench_matmul.cpp
-  src/matmul.cpp
-)
+# Optional CUDA (build this on a machine with NVIDIA + nvcc)
+option(USE_CUDA "Enable CUDA matmul" OFF)
 
-target_include_directories(bench_matmul PRIVATE include)
-target_link_libraries(bench_matmul PRIVATE OpenMP::OpenMP_CXX)
-
-# Strong perf flags (safe defaults)
-target_compile_options(bench_matmul PRIVATE -O3 -march=native)
-add_executable(train_mlp
-  src/train_mlp.cpp
-  src/nn.cpp
-  src/matmul.cpp
-)
-
-target_include_directories(train_mlp PRIVATE include)
-target_link_libraries(train_mlp PRIVATE OpenMP::OpenMP_CXX)
-target_compile_options(train_mlp PRIVATE -O3 -march=native)
+if(USE_CUDA)
+  enable_language(CUDA)
+  add_library(cuda_kernels STATIC cuda/matmul.cu)
+  set_target_properties(cuda_kernels PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  target_compile_definitions(bench PRIVATE USE_CUDA=1)
+  target_link_libraries(bench PRIVATE cuda_kernels)
+endif()
