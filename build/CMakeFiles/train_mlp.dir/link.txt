@@ -1,0 +1,1 @@
+/opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/train_mlp.dir/src/train_mlp.cpp.o CMakeFiles/train_mlp.dir/src/nn.cpp.o CMakeFiles/train_mlp.dir/src/matmul.cpp.o -o train_mlp  /opt/homebrew/opt/libomp/lib/libomp.dylib

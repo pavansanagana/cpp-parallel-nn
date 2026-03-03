@@ -1,0 +1,4 @@
+/Users/pavan/Desktop/Github project 2/cpp-parallel-nn/build/CMakeFiles/bench_matmul.dir
+/Users/pavan/Desktop/Github project 2/cpp-parallel-nn/build/CMakeFiles/train_mlp.dir
+/Users/pavan/Desktop/Github project 2/cpp-parallel-nn/build/CMakeFiles/edit_cache.dir
+/Users/pavan/Desktop/Github project 2/cpp-parallel-nn/build/CMakeFiles/rebuild_cache.dir

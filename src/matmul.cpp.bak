@@ -1,0 +1,44 @@
+#include "matmul.hpp"
+#include <stdexcept>
+#include <omp.h>
+
+static inline void check_dims(const Tensor2D& A, const Tensor2D& B) {
+    if (A.cols != B.rows) throw std::runtime_error("matmul dim mismatch: A.cols must equal B.rows");
+}
+
+Tensor2D matmul_serial(const Tensor2D& A, const Tensor2D& B) {
+    check_dims(A, B);
+    Tensor2D C(A.rows, B.cols, 0.0f);
+
+    // i-k-j order tends to be cache-friendly for row-major A and C
+    for (size_t i = 0; i < A.rows; ++i) {
+        for (size_t k = 0; k < A.cols; ++k) {
+            float aik = A(i, k);
+            const float* b_row = &B.a[k * B.cols];
+            float* c_row = &C.a[i * C.cols];
+            for (size_t j = 0; j < B.cols; ++j) {
+                c_row[j] += aik * b_row[j];
+            }
+        }
+    }
+    return C;
+}
+
+Tensor2D matmul_omp(const Tensor2D& A, const Tensor2D& B) {
+    check_dims(A, B);
+    Tensor2D C(A.rows, B.cols, 0.0f);
+
+    // Parallelize over rows of C (no write conflicts)
+    #pragma omp parallel for schedule(static)
+    for (long i = 0; i < (long)A.rows; ++i) {
+        for (size_t k = 0; k < A.cols; ++k) {
+            float aik = A((size_t)i, k);
+            const float* b_row = &B.a[k * B.cols];
+            float* c_row = &C.a[(size_t)i * C.cols];
+            for (size_t j = 0; j < B.cols; ++j) {
+                c_row[j] += aik * b_row[j];
+            }
+        }
+    }
+    return C;
+}
