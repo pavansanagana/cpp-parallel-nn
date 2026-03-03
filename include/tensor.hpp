@@ -16,3 +16,17 @@ struct Tensor2D {
         return a[r * cols + c];
     }
 };
+
+inline void matmul2d(const Tensor2D& A, const Tensor2D& B, Tensor2D& C) {
+    // assumes square matrices NxN
+    const int N = A.rows;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            double sum = 0.0;
+            for (int k = 0; k < N; k++) {
+                sum += A(i, k) * B(k, j);
+            }
+            C(i, j) = sum;
+        }
+    }
+}
